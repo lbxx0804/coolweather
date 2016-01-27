@@ -157,6 +157,7 @@ public class ChooseAreaActivity extends Activity {
         HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
             @Override
             public void onFinish(String response) {
+                closeProgressDialog();
                 boolean result = false;
                 if ("province".equals(type)){
                     result = Utility.handleProvincesResponse(coolWeatherDB,response);

@@ -16,9 +16,9 @@ public class Utility {
     public synchronized static boolean handleProvincesResponse(CoolWeatherDB coolWeatherDB, String response) {
         if (!TextUtils.isEmpty(response)) {
             String[] arrProvinces = response.split(",");
-            if (arrProvinces != null && arrProvinces.length > 2) {
+            if (arrProvinces != null && arrProvinces.length > 0) {
                 for (String p : arrProvinces) {
-                    String[] array = p.split("|");
+                    String[] array = p.split("\\|");
                     Province province = new Province();
                     province.setProvinceCode(array[0]);
                     province.setProvinceName(array[1]);
@@ -39,7 +39,7 @@ public class Utility {
             String[] allCities = response.split(",");
             if (allCities != null && allCities.length > 0) {
                 for (String c : allCities) {
-                    String[] array = c.split("|");
+                    String[] array = c.split("\\|");
                     City city = new City();
                     city.setCityCode(array[0]);
                     city.setCityName(array[1]);
