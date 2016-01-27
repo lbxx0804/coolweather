@@ -6,3 +6,8 @@ http://www.weather.com.cn/data/list3/city19.xml
 
 http://www.weather.com.cn/data/list3/city1904.xml
 190401|苏州,190402|常熟,190403|张家港,190404|昆山,190405|吴县东山,190406|吴县,190407|吴江,190408|太仓
+
+{"weatherinfo":
+{"city":"昆山","cityid":"101190404","temp1":"21℃","temp2":"9℃",
+"weather":"多云转小雨","img1":"d1.gif","img2":"n7.gif","ptime":"11:00"}
+}
