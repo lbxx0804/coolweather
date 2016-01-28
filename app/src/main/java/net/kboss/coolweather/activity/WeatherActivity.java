@@ -1,15 +1,21 @@
 package net.kboss.coolweather.activity;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.kboss.coolweather.R;
+import net.kboss.coolweather.util.HttpCallbackListener;
+import net.kboss.coolweather.util.HttpUtil;
+import net.kboss.coolweather.util.Utility;
 
 /**
  * Created by Administrator on 2016/1/27.
@@ -54,8 +60,8 @@ public class WeatherActivity extends Activity {
     private Button refreshWeather;
 
     @Override
-    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_layout);
         weatherInfoLayout = (LinearLayout) findViewById(R.id.weather_info_layout);
         cityNameText = (TextView) findViewById(R.id.city_name);
@@ -78,6 +84,10 @@ public class WeatherActivity extends Activity {
         }
     }
 
+    /**
+     * 由城市编号，查询出天气编号
+     * @param countyCode
+     */
     private  void queryWeatherCode(String countyCode){
         String address = "http://www.weather.com.cn/data/list3/city" +
                 countyCode + ".xml";
@@ -97,10 +107,49 @@ public class WeatherActivity extends Activity {
      * 根据传入的地址和类型去向服务器查询天气代号或者天气信息。
      */
     private void queryFromServer(final String address, final String type) {
-
+        HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
+            @Override
+            public void onFinish(String response) {
+                if("countyCode".equals(type)){//城市代码
+                    if(!TextUtils.isEmpty(response) ){
+                        //从服务器返回数据中，解析出天气代号
+                        String [] array = response.split("\\|");
+                        if (array != null && array.length==2){
+                            String weatherCode = array[1];
+                            queryWeatherInfo(weatherCode);
+                        }
+                    }
+                }else  if("weatherCode".equals(type)){//天气代码
+                    Utility.handleWeatherResponse(WeatherActivity.this,response);//解析天气信息
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showWeather();
+                        }
+                    });
+                }
+            }
+            @Override
+            public void onError(final Exception e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        publishText.setText("同步异常..");
+                    }
+                });
+            }
+        });
     }
 
     private  void  showWeather(){
-
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        cityNameText.setText(prefs.getString("city_name",""));
+        temp1Text.setText(prefs.getString("temp1",""));
+        temp2Text.setText(prefs.getString("temp2",""));
+        weatherDespText.setText(prefs.getString("weather_desp",""));
+        publishText.setText("今天"+prefs.getString("publish_time","")+"发布");
+        currentDateText.setText(prefs.getString("current_date",""));
+        weatherInfoLayout.setVisibility(View.VISIBLE);
+        cityNameText.setVisibility(View.VISIBLE);
     }
 }

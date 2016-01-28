@@ -1,10 +1,11 @@
 package net.kboss.coolweather.util;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -16,23 +17,28 @@ public class HttpUtil {
             @Override
             public void run() {
                 HttpURLConnection connection = null;
-                try{
+                try {
                     URL url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setReadTimeout(8000);
                     connection.setReadTimeout(8000);
-                    InputStream in = connection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null){
-                        response.append(line);
-                    }
-                    if (listener != null){//回调onFinish方法
-                        listener.onFinish(response.toString());
-                    }
+                    connection.setRequestProperty("AcceCharset", "utf-8");
+                    if (connection.getResponseCode() == 200){
+                        InputStream in = connection.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        if (listener != null) {//回调onFinish方法
+                            listener.onFinish(response.toString());
+                        }
+                     }
                 }catch (Exception e){//回调出错
+                    e.printStackTrace();
+                    //Log.e("HttpUtil",e.getMessage()+"--------"+address);
                     if (listener != null){
                         listener.onError(e);
                     }
