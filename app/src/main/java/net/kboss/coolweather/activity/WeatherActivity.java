@@ -1,6 +1,7 @@
 package net.kboss.coolweather.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.kboss.coolweather.R;
+import net.kboss.coolweather.service.AutoUpdateService;
 import net.kboss.coolweather.util.HttpCallbackListener;
 import net.kboss.coolweather.util.HttpUtil;
 import net.kboss.coolweather.util.Utility;
@@ -70,7 +72,6 @@ public class WeatherActivity extends Activity {
         temp1Text = (TextView)findViewById(R.id.temp1);
         temp2Text = (TextView) findViewById(R.id.temp2);
         currentDateText = (TextView) findViewById(R.id.current_date);
-
         String countyCode = getIntent().getStringExtra("county_code");
         if (!TextUtils.isEmpty(countyCode)) {
             // 有县级代号时就去查询天气
@@ -82,6 +83,28 @@ public class WeatherActivity extends Activity {
             // 没有县级代号时就直接显示本地天气
             showWeather();
         }
+        switchCity = (Button) findViewById(R.id.switch_city);
+        refreshWeather = (Button) findViewById(R.id.refresh_weather);
+        switchCity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(WeatherActivity.this,ChooseAreaActivity.class);
+                intent.putExtra("from_weather_activity",true);
+                startActivity(intent);
+                fileList();
+            }
+        });
+        refreshWeather.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                publishText.setText("同步中...");
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                String weatherCode = preferences.getString("weather_code","");
+                if(!TextUtils.isEmpty(weatherCode)){
+                    queryWeatherInfo(weatherCode);
+                }
+            }
+        });
     }
 
     /**
@@ -148,8 +171,10 @@ public class WeatherActivity extends Activity {
         temp2Text.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp",""));
         publishText.setText("今天"+prefs.getString("publish_time","")+"发布");
-        currentDateText.setText(prefs.getString("current_date",""));
+        currentDateText.setText(prefs.getString("current_date", ""));
         weatherInfoLayout.setVisibility(View.VISIBLE);
         cityNameText.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);//启动自动刷新服务
+        startService(intent);
     }
 }
